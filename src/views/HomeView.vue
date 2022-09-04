@@ -7,6 +7,7 @@ import axios from 'axios';
         message: "Welcome to Places!!",
         places: [],
         newPlaceParams: {}, 
+        editPlaceParams: {},
         currentPlace: {},
       };
     },
@@ -32,8 +33,26 @@ import axios from 'axios';
         });
       },
       showPlace: function (place) {
-        this.currentPlace = place;
-        document.querySelector("place-details").showModal();
+       this.currentPlace = place;
+       this.editPlaceParams = place;
+        console.log(this.currentPlace);
+        document.querySelector("#place-details").showModal();
+      },
+      updatePlace: function (place) {
+          axios.patch("/places/" + place.id, this.editPlaceParams).then((response) => {
+            console.log("places update", response);
+            this.currentPlace = {};
+          })
+          .catch((error) => {
+            console.log("places update error", error.response);
+          });
+      },
+      destroyPlace: function (place) {
+        axios.delete("/places/" + place.id).then((response) => {
+          console.log("places destroy", response);
+          var index = this.places.indexOf(place);
+          this.places.splice(index, 1);
+        });
       }
     },
   };
@@ -55,21 +74,30 @@ import axios from 'axios';
    <!-- <h1>{{ places }}</h1> -->
    <h3>~All Places~</h3>
    <div v-for="place in places" v-bind:key="place.id">
+   <br/>
      <p>{{ place.name }}</p>
-     <p>{{ place.address }}</p>
      <img v-bind:src="place.image_url" v-bind:alt="place.name" />
+     
      <button v-on:click="showPlace(place)">More info</button>
   </div>
-  <dialog id="place-details">
+ 
+</div>
+<dialog id="place-details">
    <form method="dialog">
-     <h1>Place info</h1>
-     <p>Name: {{ currentPlace.name }}</p>
-     <p>address: {{ currentPlace.address }}</p>
-     <p>image_url: {{ currentPlace.image_url }}</p>
+     <h3>Place info</h3>
+     <!-- <p>Name: {{ currentPlace.name }}</p>
+     <p>address: {{ currentPlace.address }}</p> 
+    <p>image_url: {{ currentPlace.image_url }}</p> -->
+    <p>Name:<input type="text" v-model="editPlaceParams.name" /></p>
+    <p>Address:<input type="text" v-model="editPlaceParams.address" /></p>
+    <p>Image_url:<input type="text" v-model="editPlaceParams.image_url" /></p>
+    <button v-on:click="updatePlace(currentPlace)">Update</button>
+    <button v-on:click="destroyPlace(currentPlace)">Delete</button>
      <button>Close</button>
     </form>
   </dialog>
-</div>
 </template>
 
 <style></style>
+
+
